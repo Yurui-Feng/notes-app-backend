@@ -115,24 +115,29 @@ function ensureAuthenticated(req, res, next) {
   }
 }
 
-// Create a new note
-app.post("/notes", ensureAuthenticated, (req, res) => {
-  User.findById(req.user.id, (err, user) => {
-    if (err) {
-      console.log(err);
-      res.status(500).send(err);
-    } else {
-      console.log(user.notes);
-      res.json(user.notes);
-    }
-  });
-});
-
 // Get all notes
 app.get("/notes", ensureAuthenticated, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     res.json(user.notes);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("An error occurred");
+  }
+});
+
+// Create a new note
+app.post("/notes", ensureAuthenticated, async (req, res) => {
+  try {
+    const { title, content } = req.body; // extract title and content from the request
+    const note = { title, content }; // create a new note object
+
+    // Find the user and update their notes array
+    const user = await User.findById(req.user.id);
+    user.notes.push(note);
+    await user.save();
+
+    res.status(201).json(note); // send the created note back
   } catch (err) {
     console.error(err);
     res.status(500).send("An error occurred");
