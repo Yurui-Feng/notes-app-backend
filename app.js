@@ -102,9 +102,26 @@ app
     }
   );
 
-app.get("/logout", (req, res) => {
-  req.logout();
-  res.redirect("/");
+app.get("/isAuthenticated", (req, res) => {
+  if (req.isAuthenticated()) {
+    res.json({ isAuthenticated: true });
+  } else {
+    res.json({ isAuthenticated: false });
+  }
+});
+
+// Server code
+// Server code
+app.post("/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send("An error occurred while logging out");
+    }
+
+    res.clearCookie("connect.sid"); // If you're using 'connect.sid' as the cookie name
+    res.status(200).send("Logged out successfully");
+  });
 });
 
 function ensureAuthenticated(req, res, next) {
@@ -159,8 +176,6 @@ app.delete("/notes/:id", ensureAuthenticated, async (req, res) => {
   const noteId = req.params.id;
   try {
     const user = await User.findById(req.user.id);
-    console.log(user);
-    console.log(noteId);
     user.notes = user.notes.filter((note) => note._id.toString() !== noteId);
     await user.save();
     res.status(200).json({ message: "Note deleted successfully" });
