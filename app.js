@@ -6,9 +6,16 @@ const passport = require("passport");
 const session = require("express-session");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const findOrCreate = require("mongoose-findorcreate");
+const cors = require("cors");
 
 const app = express();
+const corsOptions = {
+  origin: "http://localhost:3001",
+  optionsSuccessStatus: 204,
+  credentials: true,
+};
 
+app.use(cors(corsOptions));
 app.use(express.static("public"));
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
@@ -90,7 +97,8 @@ app
   .get(
     passport.authenticate("google", { failureRedirect: "/login" }),
     (req, res) => {
-      res.redirect("/");
+      console.log("redirecting to home page");
+      res.redirect("http://localhost:3001");
     }
   );
 
@@ -109,23 +117,37 @@ function ensureAuthenticated(req, res, next) {
 
 // Create a new note
 app.post("/notes", ensureAuthenticated, (req, res) => {
-  // code to create a new note
+  User.findById(req.user.id, (err, user) => {
+    if (err) {
+      console.log(err);
+      res.status(500).send(err);
+    } else {
+      console.log(user.notes);
+      res.json(user.notes);
+    }
+  });
 });
 
 // Get all notes
-app.get("/notes", ensureAuthenticated, (req, res) => {
-  // code to get all notes
+app.get("/notes", ensureAuthenticated, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    res.json(user.notes);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("An error occurred");
+  }
 });
 
-// Get a single note
-app.get("/notes/:id", ensureAuthenticated, (req, res) => {
-  // code to get a single note
-});
+// // Get a single note
+// app.get("/notes/:id", ensureAuthenticated, (req, res) => {
+//   // code to get a single note
+// });
 
-// Update a note
-app.put("/notes/:id", ensureAuthenticated, (req, res) => {
-  // code to update a note
-});
+// // Update a note
+// app.put("/notes/:id", ensureAuthenticated, (req, res) => {
+//   // code to update a note
+// });
 
 // Delete a note
 app.delete("/notes/:id", ensureAuthenticated, (req, res) => {
