@@ -155,8 +155,19 @@ app.post("/notes", ensureAuthenticated, async (req, res) => {
 // });
 
 // Delete a note
-app.delete("/notes/:id", ensureAuthenticated, (req, res) => {
-  // code to delete a note
+app.delete("/notes/:id", ensureAuthenticated, async (req, res) => {
+  const noteId = req.params.id;
+  try {
+    const user = await User.findById(req.user.id);
+    console.log(user);
+    console.log(noteId);
+    user.notes = user.notes.filter((note) => note._id.toString() !== noteId);
+    await user.save();
+    res.status(200).json({ message: "Note deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("An error occurred");
+  }
 });
 
 app.listen(3000, () => {
