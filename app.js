@@ -6,26 +6,30 @@ const passport = require("passport");
 const session = require("express-session");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const findOrCreate = require("mongoose-findorcreate");
-const cors = require("cors");
+// const cors = require("cors");
 
 const app = express();
-const corsOptions = {
-  origin: "http://localhost:3001",
-  optionsSuccessStatus: 204,
-  credentials: true,
-};
-
-app.use(cors(corsOptions));
+// const corsOptions = {
+//   origin: "http://localhost:3001",
+//   optionsSuccessStatus: 204,
+//   credentials: true,
+// };
+const PORT = process.env.PORT || 3000;
+// app.use(cors(corsOptions));
 app.use(express.static("public"));
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 
 // setup database connection
 try {
-  mongoose.connect("mongodb://localhost:27017/notesDB", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
+  mongoose.connect(
+    process.env.MONGODB_URI,
+    // || "mongodb://localhost:27017/notesDB"
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  );
   console.log("Database connected successfully");
 } catch (error) {
   console.log(error);
@@ -78,7 +82,9 @@ passport.use(
     {
       clientID: process.env.CLIENT_ID,
       clientSecret: process.env.CLIENT_SECRET,
-      callbackURL: "http://localhost:3000/auth/google/secrets",
+      callbackURL:
+        process.env.GOOGLE_CALLBACK_URL ||
+        "http://localhost:3000/auth/google/secrets",
     },
     function (accessToken, refreshToken, profile, cb) {
       User.findOrCreate({ googleId: profile.id }, function (err, user) {
@@ -87,6 +93,10 @@ passport.use(
     }
   )
 );
+//load balancer health check
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
 
 app
   .route("/auth/google")
@@ -98,7 +108,7 @@ app
     passport.authenticate("google", { failureRedirect: "/login" }),
     (req, res) => {
       console.log("redirecting to home page");
-      res.redirect("http://localhost:3001");
+      res.redirect(process.env.FRONTEND_URL || "http://localhost:3001");
     }
   );
 
@@ -110,7 +120,6 @@ app.get("/isAuthenticated", (req, res) => {
   }
 });
 
-// Server code
 // Server code
 app.post("/logout", (req, res) => {
   req.session.destroy((err) => {
@@ -161,16 +170,6 @@ app.post("/notes", ensureAuthenticated, async (req, res) => {
   }
 });
 
-// // Get a single note
-// app.get("/notes/:id", ensureAuthenticated, (req, res) => {
-//   // code to get a single note
-// });
-
-// // Update a note
-// app.put("/notes/:id", ensureAuthenticated, (req, res) => {
-//   // code to update a note
-// });
-
 // Delete a note
 app.delete("/notes/:id", ensureAuthenticated, async (req, res) => {
   const noteId = req.params.id;
@@ -185,6 +184,6 @@ app.delete("/notes/:id", ensureAuthenticated, async (req, res) => {
   }
 });
 
-app.listen(3000, () => {
-  console.log("Server started on port 3000");
+app.listen(PORT, () => {
+  console.log(`Server started on port ${PORT}`);
 });
