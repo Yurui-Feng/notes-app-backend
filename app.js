@@ -6,7 +6,7 @@ const passport = require("passport");
 const session = require("express-session");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const findOrCreate = require("mongoose-findorcreate");
-// const cors = require("cors");
+const cors = require("cors");
 
 const app = express();
 // const corsOptions = {
@@ -14,8 +14,18 @@ const app = express();
 //   optionsSuccessStatus: 204,
 //   credentials: true,
 // };
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || "http://localhost:3001", // Use your frontend's URL or localhost for development
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true, // Allow session cookie from browser to pass through
+  // allowedHeaders: ["Content-Type", "Authorization"],
+  // exposedHeaders: ["set-cookie"],
+};
+
+app.use(cors(corsOptions));
+
 const PORT = process.env.PORT || 3000;
-// app.use(cors(corsOptions));
+app.use(cors(corsOptions));
 app.use(express.static("public"));
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
