@@ -65,6 +65,12 @@ app.use(
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
+    cookie: {
+      sameSite: "none",
+      secure: true,
+      maxAge: 1000 * 60 * 60 * 24 * 7, // One week
+      httpOnly: true,
+    },
   })
 );
 // setup passport for authentication
