@@ -28,7 +28,6 @@ app.use(cors(corsOptions));
 app.set("trust proxy", 1);
 
 const PORT = process.env.PORT || 3000;
-app.use(cors(corsOptions));
 app.use(express.static("public"));
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
@@ -67,9 +66,7 @@ app.use(
     store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
     cookie: {
       secure: true,
-      httpOnly: true,
       sameSite: "none",
-      maxAge: 60 * 60 * 24 * 1000,
     },
   })
 );
