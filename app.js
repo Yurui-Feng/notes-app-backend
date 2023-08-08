@@ -7,6 +7,7 @@ const session = require("express-session");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const findOrCreate = require("mongoose-findorcreate");
 const cors = require("cors");
+const MongoStore = require("connect-mongo");
 
 const app = express();
 // const corsOptions = {
@@ -14,6 +15,7 @@ const app = express();
 //   optionsSuccessStatus: 204,
 //   credentials: true,
 // };
+
 const corsOptions = {
   origin: process.env.FRONTEND_URL || "http://localhost:3001", // Use your frontend's URL or localhost for development
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
@@ -23,6 +25,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.set("trust proxy", 1);
 
 const PORT = process.env.PORT || 3000;
 app.use(cors(corsOptions));
@@ -61,6 +64,7 @@ app.use(
     secret: process.env.SECRET,
     resave: false,
     saveUninitialized: false,
+    store: MongoStore.create({ mongooseConnection: mongoose.connection }),
   })
 );
 // setup passport for authentication
