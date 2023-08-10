@@ -1,3 +1,5 @@
+[![Deploy to ECS](https://github.com/Yurui-Feng/notes-app-backend/actions/workflows/cd.yml/badge.svg)](https://github.com/Yurui-Feng/notes-app-backend/actions/workflows/cd.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 # Notes App: Your Personal Note-Taking Solution
 
 Introducing Notes App, a modern, full-stack note-taking web application that seamlessly integrates a React frontend with a robust backend API. It has been specifically designed to offer an intuitive, responsive user experience combined with a secure, high-performance back-end.
